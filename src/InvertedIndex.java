@@ -1,7 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -12,15 +12,18 @@ public class InvertedIndex {
 
     //private static int totalFiles;
     private ArrayList<Thread> threads;
+    private Map<Integer,String> files = new HashMap<Integer,String>();
     private ArrayList<ProcessFiles> runnables;
     private ConcurrentLinkedDeque<File> filesList;
     private Thread createVirtualThreads;
     private ProcessFiles createVirtualThreadsRunnable;
+    private int fileNumber;
     //private static Map<Character,Integer> resultsMap = new TreeMap<>();
 
     public InvertedIndex() {
         runnables = new ArrayList<ProcessFiles>();
         threads = new ArrayList<Thread>();
+        files = new HashMap<>();
         filesList = new ConcurrentLinkedDeque<File>();
     }
 
@@ -31,7 +34,7 @@ public class InvertedIndex {
     public void processFiles(String dirPath) {
         createVirtualThreadsRunnable = new ProcessFiles(this);
         createVirtualThreads = Thread.startVirtualThread(createVirtualThreadsRunnable);
-        System.out.println("Ficheros:");
+        fileNumber = 1;
         processFilesRecursive(dirPath);
         createVirtualThreadsRunnable.Finish();
     }
@@ -50,7 +53,7 @@ public class InvertedIndex {
                     // Si es un fichero de texto, crear un hilo para procesarlo.
                     if (checkFile(content[i].getName())){
                         filesList.add(content[i]);
-                        System.out.flush();
+                        files.put(fileNumber++, content[i].getAbsolutePath());
                     }
                 }
             }
