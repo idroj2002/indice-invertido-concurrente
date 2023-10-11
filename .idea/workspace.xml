@@ -5,16 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d6ccc4d-0516-402c-8d99-62732ee517a8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/ProcesarDirectorios.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ProcesarFicherosCon.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/ProcessFile.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/ProcessFiles.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Indexing.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ProcesarDirectorios.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/InvertedIndex.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ProcesarFicherosCon.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ProcesarFicherosCon.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -32,8 +43,9 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/Jordi/Desktop/UNIVERSITAT 2023-2024/Sistemes concurrents i paralels/Ejercicio 3/ProcesarFicherosCon",
+    "last_opened_file_path": "C:/Users/Jordi/Desktop/UNIVERSITAT 2023-2024/Sistemes concurrents i paralels/Ejercicio 2",
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
@@ -41,9 +53,27 @@
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Jordi\Desktop\UNIVERSITAT 2023-2024\Sistemes concurrents i paralels\Practica 1\Practica 1\Practica 1\src" />
+      <recent name="C:\Users\Jordi\Desktop\UNIVERSITAT 2023-2024\Sistemes concurrents i paralels\Practica 1\Practica 1\Practica 1" />
+    </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Indexing" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Indexing" />
+      <module name="Practica 1" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Indexing" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">

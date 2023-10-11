@@ -18,7 +18,7 @@ public class ProcesarFicherosCon implements Runnable {
 
     @Override
     public void run() {
-        File file = ProcesarDirectorios.getNextFile();
+        /*File file = InvertedIndex.getNextFile();
         while (file != null) {
             FileReader fr = null;
             try {
@@ -53,7 +53,7 @@ public class ProcesarFicherosCon implements Runnable {
                 }
             }
 
-            file = ProcesarDirectorios.getNextFile();
-        }
+            file = InvertedIndex.getNextFile();
+        }*/
     }
 }
