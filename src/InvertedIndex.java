@@ -19,6 +19,7 @@ public class InvertedIndex {
     private Map<Integer,String> files = new HashMap<Integer,String>();
     private ArrayList<ProcessFiles> runnables;
     private ConcurrentLinkedDeque<File> filesList;
+    private Map<String, HashSet<Location>> index = new TreeMap<>();
     private Thread createVirtualThreads;
     private ProcessFiles createVirtualThreadsRunnable;
     private int fileNumber;
@@ -62,6 +63,8 @@ public class InvertedIndex {
         } catch (Exception e) {
             System.err.println("Join Exception: " + e.getMessage());
         }
+        index = createVirtualThreadsRunnable.getIndex();
+        if (Indexing.DEBUG) System.out.println(index);
     }
 
     // Procesamiento recursivo del directorio para buscar los ficheros de texto, almacenandolo en la lista fileList

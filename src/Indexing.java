@@ -7,6 +7,7 @@ public class Indexing {
 
     // Extensión de los ficheros a procesar
     private static String extension;
+    public static final boolean DEBUG = true;
 
     public static void main(String[] args) {
         InvertedIndex invertedIndex;
