@@ -9,11 +9,15 @@ public class Indexing {
     private static String extension;
 
     public static void main(String[] args) {
-        path = "./Input/SmallExample";
-        if (args.length>0)
-            path = args[0];
+        InvertedIndex invertedIndex;
 
-        InvertedIndex invertedIndex = new InvertedIndex();
-        invertedIndex.processFiles(path);
+        if (args.length < 1 || args.length > 2)
+            System.err.println("Erro in Parameters. Usage: Indexing <SourceDirectory> [<Index_Directory>]");
+        if (args.length < 2)
+            invertedIndex = new InvertedIndex(args[0]);
+        else
+            invertedIndex = new InvertedIndex(args[0], args[1]);
+
+        invertedIndex.buildIndex();
     }
 }

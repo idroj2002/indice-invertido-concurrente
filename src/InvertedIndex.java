@@ -7,10 +7,13 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class InvertedIndex {
 
-    // Extensión de los ficheros a procesar
-    private final String EXTENSION = "txt";
+    // Constantes:
+    private final String EXTENSION = "txt"; // Extensión de los ficheros a procesar
+    private final String DEFAULTINDEXDIR = "./Index/"; // Directorio por defecto donde se guarda el indice invertido.
 
-    //private static int totalFiles;
+    // Variables de clase:
+    private String InputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
+    private String IndexDirPath; // Contiene la ruta del directorio que contiene el índice invertido.
     private ArrayList<Thread> threads;
     private Map<Integer,String> files = new HashMap<Integer,String>();
     private ArrayList<ProcessFiles> runnables;
@@ -20,7 +23,19 @@ public class InvertedIndex {
     private int fileNumber;
     //private static Map<Character,Integer> resultsMap = new TreeMap<>();
 
-    public InvertedIndex() {
+    public InvertedIndex(String InputPath) {
+        this.InputDirPath = InputPath;
+        this.IndexDirPath = DEFAULTINDEXDIR;
+        initCollections();
+    }
+
+    public InvertedIndex(String inputDir, String indexDir) {
+        this.InputDirPath = inputDir;
+        this.IndexDirPath = indexDir;
+        initCollections();
+    }
+
+    private void initCollections() {
         runnables = new ArrayList<ProcessFiles>();
         threads = new ArrayList<Thread>();
         files = new HashMap<>();
@@ -31,11 +46,11 @@ public class InvertedIndex {
         return filesList.poll();
     }
 
-    public void processFiles(String dirPath) {
+    public void buildIndex() {
         createVirtualThreadsRunnable = new ProcessFiles(this);
         createVirtualThreads = Thread.startVirtualThread(createVirtualThreadsRunnable);
         fileNumber = 1;
-        processFilesRecursive(dirPath);
+        processFilesRecursive(InputDirPath);
         createVirtualThreadsRunnable.Finish();
         try {
             createVirtualThreads.join();
