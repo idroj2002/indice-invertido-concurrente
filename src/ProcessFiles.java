@@ -1,14 +1,17 @@
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static java.lang.Thread.sleep;
 
 public class ProcessFiles implements Runnable {
 
-    private InvertedIndex index;
+    private InvertedIndex buildIndex;
     private ArrayList<Thread> threads;
     private ArrayList<ProcessFile> runnables;
+    private Map<String, HashSet<Location>> index = new TreeMap<>();
     private boolean existMoreFiles = true;
     private int id;
 
@@ -17,17 +20,21 @@ public class ProcessFiles implements Runnable {
     }
 
     public ProcessFiles(InvertedIndex index) {
-        this.index = index;
+        this.buildIndex = index;
         runnables = new ArrayList<ProcessFile>();
         threads = new ArrayList<Thread>();
         id = 1;
+    }
+
+    public Map<String, HashSet<Location>> getIndex() {
+        return index;
     }
 
     @Override
     public void run() {
         while(true)
         {
-            File nextFile = index.getNextFile();
+            File nextFile = buildIndex.getNextFile();
             if (nextFile == null) {
                 if (!existMoreFiles) break;
 
@@ -48,6 +55,13 @@ public class ProcessFiles implements Runnable {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        for (ProcessFile processFile : runnables) {
+            for (Map.Entry<String, HashSet<Location>> entry : processFile.getIndex().entrySet())
+                index
+                        .computeIfAbsent(entry.getKey(), k -> new HashSet<>())
+                        .addAll(entry.getValue());
         }
     }
 }
