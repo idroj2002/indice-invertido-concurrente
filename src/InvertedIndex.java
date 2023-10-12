@@ -1,15 +1,16 @@
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+
+import static java.lang.System.exit;
 
 
 public class InvertedIndex {
 
     // Constantes:
     private final String EXTENSION = "txt"; // Extensión de los ficheros a procesar
-    private final String DEFAULTINDEXDIR = "./Index/"; // Directorio por defecto donde se guarda el indice invertido.
+    private final String DEFAULT_INDEX_DIR = "./Index/"; // Directorio por defecto donde se guarda el indice invertido.
+    private final String INDEX_FILE_PREFIX = "IndexFile";
 
     // Variables de clase:
     private String InputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
@@ -23,9 +24,13 @@ public class InvertedIndex {
     private int fileNumber;
     //private static Map<Character,Integer> resultsMap = new TreeMap<>();
 
+    public InvertedIndex() {
+        initCollections();
+    }
+
     public InvertedIndex(String InputPath) {
         this.InputDirPath = InputPath;
-        this.IndexDirPath = DEFAULTINDEXDIR;
+        this.IndexDirPath = DEFAULT_INDEX_DIR;
         initCollections();
     }
 
@@ -84,5 +89,54 @@ public class InvertedIndex {
 
     private boolean checkFile(String name) {
         return name.endsWith(EXTENSION);
+    }
+
+    public void loadInvertedIndex(String inputDirectory) {
+        File folder = new File(inputDirectory);
+        System.out.println("Dir: " + folder.getAbsolutePath());
+        File[] listOfFiles = folder.listFiles((d, name) -> name.startsWith(INDEX_FILE_PREFIX));
+
+        // Control de errores
+        if (listOfFiles == null) {
+            System.err.println("Directory " + inputDirectory + " not found");
+            exit(0);
+        }
+        if (listOfFiles.length == 0) {
+            System.err.println("The input dir " + folder.getAbsolutePath() + " is empty");
+            exit(0);
+        }
+
+        ArrayList<BuildIndex> tasks = new ArrayList<BuildIndex>();
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+
+        for (File file : listOfFiles) {
+            BuildIndex task = new BuildIndex(file);
+            Thread thread = Thread.startVirtualThread(task);
+            tasks.add(task);
+            threads.add(thread);
+        }
+
+        for (int i = 0; i < threads.size(); i++) {
+            try {
+                threads.get(i).join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        System.out.println(combineHashes(tasks).toString());
+    }
+
+    private Map<String, HashSet<Location>> combineHashes(ArrayList<BuildIndex> runnables) {
+        Map<String, HashSet<Location>> hash = new TreeMap<String, HashSet <Location>>();
+        for (BuildIndex buildIndex : runnables) {
+            for (Map.Entry<String, HashSet<Location>> entry : buildIndex.getHash().entrySet()) {
+                hash
+                        .computeIfAbsent(entry.getKey(), k -> new HashSet<>())
+                        .addAll(entry.getValue());
+            }
+        }
+
+        return hash;
     }
 }
