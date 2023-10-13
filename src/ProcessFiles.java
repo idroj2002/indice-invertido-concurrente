@@ -4,14 +4,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static java.lang.Thread.sleep;
-
 public class ProcessFiles implements Runnable {
 
     private InvertedIndex buildIndex;
     private ArrayList<Thread> threads;
     private ArrayList<ProcessFile> runnables;
-    private Map<String, HashSet<Location>> index = new TreeMap<>();
+    private final Map<String, HashSet<Location>> index = new TreeMap<>();
     private boolean existMoreFiles = true;
     private int id;
 

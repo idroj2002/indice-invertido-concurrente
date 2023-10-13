@@ -1,5 +1,9 @@
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static java.lang.System.exit;
@@ -13,15 +17,13 @@ public class InvertedIndex {
     private final String INDEX_FILE_PREFIX = "IndexFile";
 
     // Variables de clase:
-    private String InputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
-    private String IndexDirPath; // Contiene la ruta del directorio que contiene el índice invertido.
+    private String inputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
+    private String indexDirPath; // Contiene la ruta del directorio que contiene el índice invertido.
     private ArrayList<Thread> threads;
     private Map<Integer,String> files = new HashMap<Integer,String>();
     private ArrayList<ProcessFiles> runnables;
     private ConcurrentLinkedDeque<File> filesList;
-    private Map<String, HashSet<Location>> index = new TreeMap<>();
-    private Thread createVirtualThreads;
-    private ProcessFiles createVirtualThreadsRunnable;
+    private Map<String, HashSet<Location>> index = new ConcurrentHashMap<>();
     private int fileNumber;
     //private static Map<Character,Integer> resultsMap = new TreeMap<>();
 
@@ -30,14 +32,14 @@ public class InvertedIndex {
     }
 
     public InvertedIndex(String InputPath) {
-        this.InputDirPath = InputPath;
-        this.IndexDirPath = DEFAULT_INDEX_DIR;
+        this.inputDirPath = InputPath;
+        this.indexDirPath = DEFAULT_INDEX_DIR;
         initCollections();
     }
 
     public InvertedIndex(String inputDir, String indexDir) {
-        this.InputDirPath = inputDir;
-        this.IndexDirPath = indexDir;
+        this.inputDirPath = inputDir;
+        this.indexDirPath = indexDir;
         initCollections();
     }
 
@@ -53,10 +55,10 @@ public class InvertedIndex {
     }
 
     public void buildIndex() {
-        createVirtualThreadsRunnable = new ProcessFiles(this);
-        createVirtualThreads = Thread.startVirtualThread(createVirtualThreadsRunnable);
+        ProcessFiles createVirtualThreadsRunnable = new ProcessFiles(this);
+        Thread createVirtualThreads = Thread.startVirtualThread(createVirtualThreadsRunnable);
         fileNumber = 1;
-        processFilesRecursive(InputDirPath);
+        processFilesRecursive(inputDirPath);
         createVirtualThreadsRunnable.Finish();
         try {
             createVirtualThreads.join();
@@ -65,6 +67,7 @@ public class InvertedIndex {
         }
         index = createVirtualThreadsRunnable.getIndex();
         if (Indexing.DEBUG) System.out.println(index);
+        saveInvertedIndex();
     }
 
     // Procesamiento recursivo del directorio para buscar los ficheros de texto, almacenandolo en la lista fileList
@@ -72,16 +75,15 @@ public class InvertedIndex {
         File file=new File(dirpath);
         File content[] = file.listFiles();
         if (content != null) {
-            for (int i = 0; i < content.length; i++) {
-                if (content[i].isDirectory()) {
+            for (File value : content) {
+                if (value.isDirectory()) {
                     // Si es un directorio, procesarlo recursivamente.
-                    processFilesRecursive(content[i].getAbsolutePath());
-                }
-                else {
+                    processFilesRecursive(value.getAbsolutePath());
+                } else {
                     // Si es un fichero de texto, crear un hilo para procesarlo.
-                    if (checkFile(content[i].getName())){
-                        filesList.add(content[i]);
-                        files.put(fileNumber++, content[i].getAbsolutePath());
+                    if (checkFile(value.getName())) {
+                        filesList.add(value);
+                        files.put(fileNumber++, value.getAbsolutePath());
                     }
                 }
             }
@@ -92,6 +94,40 @@ public class InvertedIndex {
 
     private boolean checkFile(String name) {
         return name.endsWith(EXTENSION);
+    }
+
+    private void saveInvertedIndex() {
+        try {
+            resetDirectory(indexDirPath);
+            Runnable saveIndex = new SaveIndex(index, indexDirPath);
+            Thread saveIndexThread = Thread.startVirtualThread(saveIndex);
+
+
+            Runnable saveFilesIds = new SaveFilesIds(files, indexDirPath);
+            Thread saveFilesIdsThread = Thread.startVirtualThread(saveFilesIds);
+
+            saveIndexThread.join();
+            saveFilesIdsThread.join();
+
+            //saveFilesLines(indexDirectory);
+        } catch (RuntimeException | InterruptedException e){
+            System.err.printf(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void resetDirectory(String directory) throws RuntimeException {
+        File path = new File(directory);
+        if (!path.exists())
+            if (!path.mkdir()) throw new RuntimeException("Error creando el directorio " + directory);
+        else if (path.isDirectory()) {
+            try {
+                FileUtils.cleanDirectory(path);
+            } catch (IOException e) {
+                System.err.printf("Error borrando contenido directorio indice %s.\n",path.getAbsolutePath());
+                e.printStackTrace();
+            }
+        }
     }
 
     public void loadInvertedIndex(String inputDirectory) {
@@ -119,9 +155,9 @@ public class InvertedIndex {
             threads.add(thread);
         }
 
-        for (int i = 0; i < threads.size(); i++) {
+        for (Thread thread : threads) {
             try {
-                threads.get(i).join();
+                thread.join();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -139,7 +175,6 @@ public class InvertedIndex {
                         .addAll(entry.getValue());
             }
         }
-
         return hash;
     }
 }
