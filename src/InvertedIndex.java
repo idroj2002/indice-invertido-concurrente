@@ -1,16 +1,11 @@
-<<<<<<< HEAD
 import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
-=======
 import java.io.*;
 import java.text.Normalizer;
->>>>>>> 2e4254f4c9d4f6fdb1acf418b77f0a6c17a95c8d
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-
 import static java.lang.System.exit;
 
 
@@ -37,14 +32,10 @@ public class InvertedIndex {
     private Map<Integer,String> files = new HashMap<Integer,String>();
     private ArrayList<ProcessFiles> runnables;
     private ConcurrentLinkedDeque<File> filesList;
-<<<<<<< HEAD
     private Map<String, HashSet<Location>> index = new ConcurrentHashMap<>();
-=======
-    private Map<String, HashSet<Location>> index = new TreeMap<String, HashSet<Location>>();
     private Map<Location, String> indexFilesLines = new TreeMap<Location, String>();
     private Thread createVirtualThreads;
     private ProcessFiles createVirtualThreadsRunnable;
->>>>>>> 2e4254f4c9d4f6fdb1acf418b77f0a6c17a95c8d
     private int fileNumber;
     private static Map<String,  HashSet<Location>> resultsMap = new TreeMap<String, HashSet <Location>>();
 
@@ -124,7 +115,6 @@ public class InvertedIndex {
         return name.endsWith(EXTENSION);
     }
 
-<<<<<<< HEAD
     private void saveInvertedIndex() {
         try {
             resetDirectory(indexDirPath);
