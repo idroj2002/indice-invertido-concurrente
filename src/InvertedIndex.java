@@ -149,6 +149,12 @@ public class InvertedIndex {
         }
     }
 
+    public void loadIndex(String inputDirectory) {
+        loadInvertedIndex(inputDirectory);
+        loadFilesIds(inputDirectory);
+        loadFilesLines(inputDirectory);
+    }
+
     public void loadInvertedIndex(String inputDirectory) {
         File folder = new File(inputDirectory);
         System.out.println("Dir: " + folder.getAbsolutePath());
@@ -157,11 +163,11 @@ public class InvertedIndex {
         // Control de errores
         if (listOfFiles == null) {
             System.err.println("Directory " + inputDirectory + " not found");
-            exit(0);
+            exit(-1);
         }
         if (listOfFiles.length == 0) {
             System.err.println("The input dir " + folder.getAbsolutePath() + " is empty");
-            exit(0);
+            exit(-1);
         }
 
         ArrayList<BuildIndex> tasks = new ArrayList<BuildIndex>();
@@ -276,7 +282,6 @@ public class InvertedIndex {
     //  3. Agrupa palabras segun su localizacion en una hash de coincidencias.
     //  4. Recorremos la tabla de coincidencia y mostramos las coincidencias en función del porcentaje de matching.
     public void query(String queryString) {
-        String queryResult=null;
         Map<Location, Integer> queryMatchings = new TreeMap<Location, Integer>();
 
         System.out.println ("Searching for query: "+queryString);
@@ -285,9 +290,10 @@ public class InvertedIndex {
         queryString = Normalizer.normalize(queryString, Normalizer.Form.NFD);
         queryString = queryString.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
         String filter_line = queryString.replaceAll("[^a-zA-Z0-9áÁéÉíÍóÓúÚäÄëËïÏöÖüÜñÑ ]","");
+
         // Dividimos la línea en palabras.
         String[] words = filter_line.split("\\W+");
-        int querySize = words.length;
+        final int querySize = words.length;
 
         // Creamos los hilos
         ArrayList<ProcessQueryWord> tasks = new ArrayList<ProcessQueryWord>();
@@ -295,12 +301,16 @@ public class InvertedIndex {
 
         int numberOfThreads = querySize / QUERY_WORDS_PER_THREAD;
         int offset = querySize % QUERY_WORDS_PER_THREAD;
-        if (numberOfThreads == 0) numberOfThreads = 1;
+        if (numberOfThreads == 0){
+            numberOfThreads = 1;
+            offset--;
+        }
 
         System.out.println("Number of threads: " + numberOfThreads);
 
         for (int i = 0; i < numberOfThreads; i++) {
-            int numberOfWords = QUERY_WORDS_PER_THREAD;
+            int numberOfWords = Math.min(querySize, QUERY_WORDS_PER_THREAD);
+
             if (offset > 0) {
                 numberOfWords++;
                 offset--;
@@ -310,6 +320,7 @@ public class InvertedIndex {
 
             ProcessQueryWord task = new ProcessQueryWord(Arrays.copyOf(words, numberOfWords), resultsMap);
             words = Arrays.copyOfRange(words, numberOfWords, words.length);
+
             Thread thread = Thread.startVirtualThread(task);
             tasks.add(task);
             threads.add(thread);
