@@ -1,4 +1,6 @@
 import java.util.Objects;
+import java.io.Serializable;
+
 
 public class Location implements Comparable<Location>
 {
