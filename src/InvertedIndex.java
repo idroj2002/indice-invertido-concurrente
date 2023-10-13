@@ -1,4 +1,5 @@
-import java.io.File;
+import java.io.*;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -8,9 +9,18 @@ import static java.lang.System.exit;
 public class InvertedIndex {
 
     // Constantes:
+    private final String ANSI_RED = "\u001B[31m";
+    private final String ANSI_GREEN = "\u001B[32m";
+    private final String ANSI_GREEN_YELLOW_UNDER = "\u001B[32;40;4m";
+    private final String ANSI_RESET = "\u001B[0m";
+    private final float MATCHING_PERCENTAGE = 0.8f;
+    private final float NEARLY_MATCHING_PERCENTAGE = 0.6f;
     private final String EXTENSION = "txt"; // Extensión de los ficheros a procesar
     private final String DEFAULT_INDEX_DIR = "./Index/"; // Directorio por defecto donde se guarda el indice invertido.
     private final String INDEX_FILE_PREFIX = "IndexFile";
+    private final String FILES_IDS_NAME = "FilesIds";
+    private final String FILE_LINES_NAME = "FilesLinesContent";
+    private final int QUERY_WORDS_PER_THREAD = 2;
 
     // Variables de clase:
     private String InputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
@@ -19,12 +29,14 @@ public class InvertedIndex {
     private Map<Integer,String> files = new HashMap<Integer,String>();
     private ArrayList<ProcessFiles> runnables;
     private ConcurrentLinkedDeque<File> filesList;
-    private Map<String, HashSet<Location>> index = new TreeMap<>();
+    private Map<String, HashSet<Location>> index = new TreeMap<String, HashSet<Location>>();
+    private Map<Location, String> indexFilesLines = new TreeMap<Location, String>();
     private Thread createVirtualThreads;
     private ProcessFiles createVirtualThreadsRunnable;
     private int fileNumber;
-    //private static Map<Character,Integer> resultsMap = new TreeMap<>();
+    private static Map<String,  HashSet<Location>> resultsMap = new TreeMap<String, HashSet <Location>>();
 
+    // Constructores
     public InvertedIndex() {
         initCollections();
     }
@@ -48,8 +60,14 @@ public class InvertedIndex {
         filesList = new ConcurrentLinkedDeque<File>();
     }
 
+    // Getters y Setters
+
     public File getNextFile() {
         return filesList.poll();
+    }
+
+    private String getIndexFilesLine(Location loc){
+        return(indexFilesLines.get(loc));
     }
 
     public void buildIndex() {
@@ -94,7 +112,13 @@ public class InvertedIndex {
         return name.endsWith(EXTENSION);
     }
 
-    public void loadInvertedIndex(String inputDirectory) {
+    public void loadIndex(String inputDirectory) {
+        loadInvertedIndex(inputDirectory);
+        loadFilesIds(inputDirectory);
+        loadFilesLines(inputDirectory);
+    }
+
+    private void loadInvertedIndex(String inputDirectory) {
         File folder = new File(inputDirectory);
         System.out.println("Dir: " + folder.getAbsolutePath());
         File[] listOfFiles = folder.listFiles((d, name) -> name.startsWith(INDEX_FILE_PREFIX));
@@ -119,15 +143,15 @@ public class InvertedIndex {
             threads.add(thread);
         }
 
-        for (int i = 0; i < threads.size(); i++) {
+        for (Thread thread : threads) {
             try {
-                threads.get(i).join();
+                thread.join();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        System.out.println(combineHashes(tasks).toString());
+        resultsMap = combineHashes(tasks);
     }
 
     private Map<String, HashSet<Location>> combineHashes(ArrayList<BuildIndex> runnables) {
@@ -141,5 +165,154 @@ public class InvertedIndex {
         }
 
         return hash;
+    }
+
+    private Map<Location, Integer> combineProcessedQuerys(ArrayList<ProcessQueryWord> runnables) {
+        Map<Location, Integer> hash = new TreeMap<Location, Integer>();
+
+        for (ProcessQueryWord processQueryWord : runnables) {
+            Map<Location, Integer> map = processQueryWord.getHash();
+
+            for (Map.Entry<Location, Integer> entry : map.entrySet()) {
+                Location location = entry.getKey();
+                Integer value = entry.getValue();
+
+                hash.merge(location, value, Integer::sum);
+            }
+        }
+
+        return hash;
+    }
+
+    private void loadFilesIds(String inputDirectory) {
+        try {
+            FileReader input = new FileReader(inputDirectory + "/" + FILES_IDS_NAME);
+            BufferedReader bufRead = new BufferedReader(input);
+            String keyLine;
+            try {
+                // Leemos fichero línea a linea (clave a clave)
+                while ((keyLine = bufRead.readLine()) != null) {
+                    // Descomponemos la línea leída en su clave (File Id) y la ruta del fichero.
+                    String[] fields = keyLine.split("\t");
+                    int fileId = Integer.parseInt(fields[0]);
+                    fields[0]="";
+                    String filePath = String.join("", fields);
+                    files.put(fileId, filePath);
+                }
+                bufRead.close();
+
+            } catch (IOException e) {
+                System.err.println("Error reading Files Ids");
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("Error opening Files Ids file");
+            e.printStackTrace();
+        }
+    }
+
+    private void loadFilesLines(String inputDirectory) {
+        try {
+            FileReader input = new FileReader(inputDirectory + "/" + FILE_LINES_NAME);
+            BufferedReader bufRead = new BufferedReader(input);
+            String keyLine;
+            try {
+                // Leemos fichero línea a linea (clave a clave)
+                while ((keyLine = bufRead.readLine()) != null) {
+                    // Descomponemos la línea leída en su clave (Location) y la linea de texto correspondiente
+                    String[] fields = keyLine.split("\t");
+                    String[] location = fields[0].substring(1, fields[0].length()-1).split(",");
+                    int fileId = Integer.parseInt(location[0]);
+                    int line = Integer.parseInt(location[1]);
+                    fields[0]="";
+                    String textLine = String.join("", fields);
+                    indexFilesLines.put(new Location(fileId,line),textLine);
+                }
+                bufRead.close();
+
+            } catch (IOException e) {
+                System.err.println("Error reading Files Ids");
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("Error opening Files Ids file");
+            e.printStackTrace();
+        }
+    }
+
+    // Implentar una consulta sobre el indice invertido:
+    //  1. Descompone consulta en palabras.
+    //  2. Optiene las localizaciones de cada palabra en el indice invertido.
+    //  3. Agrupa palabras segun su localizacion en una hash de coincidencias.
+    //  4. Recorremos la tabla de coincidencia y mostramos las coincidencias en función del porcentaje de matching.
+    public void query(String queryString) {
+        String queryResult=null;
+        Map<Location, Integer> queryMatchings = new TreeMap<Location, Integer>();
+
+        System.out.println ("Searching for query: "+queryString);
+
+        // Pre-procesamiento query
+        queryString = Normalizer.normalize(queryString, Normalizer.Form.NFD);
+        queryString = queryString.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        String filter_line = queryString.replaceAll("[^a-zA-Z0-9áÁéÉíÍóÓúÚäÄëËïÏöÖüÜñÑ ]","");
+        // Dividimos la línea en palabras.
+        String[] words = filter_line.split("\\W+");
+        int querySize = words.length;
+
+        // Creamos los hilos
+        ArrayList<ProcessQueryWord> tasks = new ArrayList<ProcessQueryWord>();
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+
+        int numberOfThreads = querySize / QUERY_WORDS_PER_THREAD;
+        int offset = querySize % QUERY_WORDS_PER_THREAD;
+        if (numberOfThreads == 0) numberOfThreads = 1;
+
+        System.out.println("Number of threads: " + numberOfThreads);
+
+        for (int i = 0; i < numberOfThreads; i++) {
+            int numberOfWords = QUERY_WORDS_PER_THREAD;
+            if (offset > 0) {
+                numberOfWords++;
+                offset--;
+            }
+
+            System.out.println("Number of words: " + numberOfWords);
+
+            ProcessQueryWord task = new ProcessQueryWord(Arrays.copyOf(words, numberOfWords), resultsMap);
+            words = Arrays.copyOfRange(words, numberOfWords, words.length);
+            Thread thread = Thread.startVirtualThread(task);
+            tasks.add(task);
+            threads.add(thread);
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        queryMatchings = combineProcessedQuerys(tasks);
+
+        boolean coincidenceFound = false;
+        // Recorremos la tabla de coincidencia y mostramos las líneas en donde aparezca más de un % de las palabras de la query.
+        for(Map.Entry<Location, Integer> matching : queryMatchings.entrySet()) {
+            Location location = matching.getKey();
+            if ((matching.getValue() / (float) querySize) == 1.0) {
+                coincidenceFound = true;
+                System.out.printf(ANSI_GREEN_YELLOW_UNDER + "%.2f%% Full Matching found in line %d of file %s: %s.\n" + ANSI_RESET, (matching.getValue() / (float) querySize) * 100.0, location.getLine(), location.getFileId(), getIndexFilesLine(location));
+            } else if ((matching.getValue() / (float) querySize) >= MATCHING_PERCENTAGE) {
+                coincidenceFound = true;
+                System.out.printf(ANSI_GREEN + "%.2f%% Matching found in line %d of file %s: %s.\n" + ANSI_RESET, (matching.getValue() / (float) querySize) * 100.0, location.getLine(), location.getFileId(), getIndexFilesLine(location));
+            } else if ((matching.getValue()/(float)querySize) >= NEARLY_MATCHING_PERCENTAGE) {
+                coincidenceFound = true;
+                System.out.printf(ANSI_RED + "%.2f%% Weak Matching found in line %d of file %s: %s.\n" + ANSI_RESET, (matching.getValue() / (float) querySize) * 100.0, location.getLine(), location.getFileId(), getIndexFilesLine(location));
+            }
+        }
+
+        // Mostramos un mensaje si no se ha encontrado ninguna coincidencia
+        if (!coincidenceFound)
+            System.out.printf(ANSI_RED+"No Matching found.\n"+ANSI_RESET);
     }
 }

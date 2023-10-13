@@ -1,8 +1,5 @@
 import java.util.Objects;
-<<<<<<< HEAD
-=======
 import java.io.Serializable;
->>>>>>> b0b0d5ef1a1ce07f860c165a7a4775989c0c3d92
 
 public class Location implements Comparable<Location>
 {
@@ -62,8 +59,4 @@ public class Location implements Comparable<Location>
         else
             return 1;
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> b0b0d5ef1a1ce07f860c165a7a4775989c0c3d92

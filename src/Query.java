@@ -15,6 +15,7 @@ public class Query {
         indexDirectory = args[1];
 
         invertedIndex = new InvertedIndex();
-        invertedIndex.loadInvertedIndex(indexDirectory);
+        invertedIndex.loadIndex(indexDirectory);
+        invertedIndex.query(queryString);
     }
 }
