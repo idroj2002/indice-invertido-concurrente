@@ -33,7 +33,7 @@ public class InvertedIndex {
     private ArrayList<ProcessFiles> runnables;
     private ConcurrentLinkedDeque<File> filesList;
     private Map<String, HashSet<Location>> index = new ConcurrentHashMap<>();
-    private Map<Location, String> indexFilesLines = new TreeMap<Location, String>();
+    private Map<Location, String> indexFilesLines = new HashMap<>();
     private Thread createVirtualThreads;
     private ProcessFiles createVirtualThreadsRunnable;
     private int fileNumber;
@@ -86,7 +86,7 @@ public class InvertedIndex {
         }
         index = createVirtualThreadsRunnable.getIndex();
         if (Indexing.DEBUG) System.out.println(index);
-        saveInvertedIndex();
+        indexFilesLines = createVirtualThreadsRunnable.getIndexFilesLines();
     }
 
     // Procesamiento recursivo del directorio para buscar los ficheros de texto, almacenandolo en la lista fileList
@@ -115,20 +115,21 @@ public class InvertedIndex {
         return name.endsWith(EXTENSION);
     }
 
-    private void saveInvertedIndex() {
+    public void saveInvertedIndex() {
         try {
             resetDirectory(indexDirPath);
             Runnable saveIndex = new SaveIndex(index, indexDirPath);
             Thread saveIndexThread = Thread.startVirtualThread(saveIndex);
 
-
             Runnable saveFilesIds = new SaveFilesIds(files, indexDirPath);
             Thread saveFilesIdsThread = Thread.startVirtualThread(saveFilesIds);
 
+            Runnable saveFilesLines = new SaveFilesLines(indexFilesLines, indexDirPath);
+            Thread saveFilesLinesThread = Thread.startVirtualThread(saveFilesLines);
+
             saveIndexThread.join();
             saveFilesIdsThread.join();
-
-            //saveFilesLines(indexDirectory);
+            saveFilesLinesThread.join();
         } catch (RuntimeException | InterruptedException e){
             System.err.printf(e.getMessage());
             e.printStackTrace();
@@ -147,6 +148,12 @@ public class InvertedIndex {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void loadIndex(String inputDirectory) {
+        loadInvertedIndex(inputDirectory);
+        loadFilesIds(inputDirectory);
+        loadFilesLines(inputDirectory);
     }
 
     public void loadInvertedIndex(String inputDirectory) {

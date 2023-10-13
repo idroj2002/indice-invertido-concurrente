@@ -1,5 +1,6 @@
 import java.io.*;
 import java.text.Normalizer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
@@ -9,6 +10,7 @@ public class ProcessFile implements Runnable {
     private final File file;
     private final int fileId;
     private final Map<String, HashSet<Location>> index = new TreeMap<String, HashSet <Location>>();
+    private final Map<Location, String> indexFilesLines = new HashMap<>();
 
     public ProcessFile(File f, int id) {
         this.file = f;
@@ -17,6 +19,10 @@ public class ProcessFile implements Runnable {
 
     public Map<String, HashSet<Location>> getIndex() {
         return index;
+    }
+
+    public Map<Location, String> getIndexFilesLines() {
+        return indexFilesLines;
     }
 
     @Override
@@ -34,7 +40,7 @@ public class ProcessFile implements Runnable {
                 //TotalLines++;
                 if (Indexing.DEBUG) System.out.printf("Procesando linea %d fichero %d: ", lineNumber, fileId);
                 Location newLocation = new Location(fileId, lineNumber);
-                //IndexFilesLines.put(loc, line);
+                indexFilesLines.put(newLocation, line);
                 // Eliminamos carácteres especiales de la línea del fichero.
                 line = Normalizer.normalize(line, Normalizer.Form.NFD);
                 line = line.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
@@ -43,7 +49,7 @@ public class ProcessFile implements Runnable {
                 String[] words = filter_line.split("\\W+");
                 //String[] words = line.split("(?U)\\p{Space}+");
                 // Procesar cada palabra
-                for(String word:words)
+                for(String word: words)
                 {
                     if (Indexing.DEBUG) System.out.printf("%s ",word);
                     word = word.toLowerCase();

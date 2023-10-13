@@ -12,13 +12,16 @@ public class Indexing {
     public static void main(String[] args) {
         InvertedIndex invertedIndex;
 
-        if (args.length < 1 || args.length > 2)
+        if (args.length < 1 || args.length > 2) {
             System.err.println("Erro in Parameters. Usage: Indexing <SourceDirectory> [<Index_Directory>]");
+            System.exit(-1);
+        }
         if (args.length < 2)
             invertedIndex = new InvertedIndex(args[0]);
         else
             invertedIndex = new InvertedIndex(args[0], args[1]);
 
         invertedIndex.buildIndex();
+        invertedIndex.saveInvertedIndex();
     }
 }

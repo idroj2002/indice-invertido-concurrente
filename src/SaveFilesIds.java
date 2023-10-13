@@ -18,7 +18,6 @@ public class SaveFilesIds implements Runnable {
     @Override
     public void run() {
         try {
-            //File IdsFile = new File(outputDirectory +"/"+ DFilesIdsName);
             FileWriter fw = new FileWriter(indexDirPath + "/" + FILE_IDS_NAME);
             BufferedWriter bw = new BufferedWriter(fw);
             Set<Map.Entry<Integer,String>> keySet = files.entrySet();

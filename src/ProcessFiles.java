@@ -1,15 +1,13 @@
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ProcessFiles implements Runnable {
 
-    private InvertedIndex buildIndex;
-    private ArrayList<Thread> threads;
-    private ArrayList<ProcessFile> runnables;
+    private final InvertedIndex buildIndex;
+    private final ArrayList<Thread> threads;
+    private final ArrayList<ProcessFile> runnables;
     private final Map<String, HashSet<Location>> index = new TreeMap<>();
+    private final Map<Location, String> indexFilesLines = new HashMap<>();
     private boolean existMoreFiles = true;
     private int id;
 
@@ -26,6 +24,10 @@ public class ProcessFiles implements Runnable {
 
     public Map<String, HashSet<Location>> getIndex() {
         return index;
+    }
+
+    public Map<Location, String> getIndexFilesLines() {
+        return indexFilesLines;
     }
 
     @Override
@@ -60,6 +62,8 @@ public class ProcessFiles implements Runnable {
                 index
                         .computeIfAbsent(entry.getKey(), k -> new HashSet<>())
                         .addAll(entry.getValue());
+            for (Map.Entry<Location, String> entry : processFile.getIndexFilesLines().entrySet())
+                indexFilesLines.computeIfAbsent(entry.getKey(), k -> entry.getValue());
         }
     }
 }
