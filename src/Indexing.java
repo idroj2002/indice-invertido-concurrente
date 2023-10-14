@@ -1,3 +1,6 @@
+import java.time.Duration;
+import java.time.Instant;
+
 public class Indexing {
     // Número de hilos
     private static int N;
@@ -7,7 +10,7 @@ public class Indexing {
 
     // Extensión de los ficheros a procesar
     private static String extension;
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     public static void main(String[] args) {
         InvertedIndex invertedIndex;
@@ -21,7 +24,13 @@ public class Indexing {
         else
             invertedIndex = new InvertedIndex(args[0], args[1]);
 
+        Instant start = Instant.now();
+
         invertedIndex.buildIndex();
         invertedIndex.saveInvertedIndex();
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();  //in millis
+        System.out.printf("[All Stages] Total execution time: %.3f secs.\n", timeElapsed/1000.0);
     }
 }

@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.*;
 import java.text.Normalizer;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -74,6 +76,8 @@ public class InvertedIndex {
     }
 
     public void buildIndex() {
+        Instant start = Instant.now();
+
         ProcessFiles createVirtualThreadsRunnable = new ProcessFiles(this);
         Thread createVirtualThreads = Thread.startVirtualThread(createVirtualThreadsRunnable);
         fileNumber = 1;
@@ -87,6 +91,10 @@ public class InvertedIndex {
         index = createVirtualThreadsRunnable.getIndex();
         if (Indexing.DEBUG) System.out.println(index);
         indexFilesLines = createVirtualThreadsRunnable.getIndexFilesLines();
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();  //in millis
+        System.out.printf("[Build Index with %d files] Total execution time: %.3f secs.\n", filesList.size(), timeElapsed/1000.0);
     }
 
     // Procesamiento recursivo del directorio para buscar los ficheros de texto, almacenandolo en la lista fileList
@@ -116,6 +124,8 @@ public class InvertedIndex {
     }
 
     public void saveInvertedIndex() {
+        Instant start = Instant.now();
+
         try {
             resetDirectory(indexDirPath);
             Runnable saveIndex = new SaveIndex(index, indexDirPath);
@@ -130,6 +140,10 @@ public class InvertedIndex {
             saveIndexThread.join();
             saveFilesIdsThread.join();
             saveFilesLinesThread.join();
+
+            Instant finish = Instant.now();
+            long timeElapsed = Duration.between(start, finish).toMillis();  //in millis
+            System.out.printf("[Save Index with %d keys] Total execution time: %.3f secs.\n", index.size(), timeElapsed/1000.0);
         } catch (RuntimeException | InterruptedException e){
             System.err.printf(e.getMessage());
             e.printStackTrace();
@@ -151,9 +165,15 @@ public class InvertedIndex {
     }
 
     public void loadIndex(String inputDirectory) {
+        Instant start = Instant.now();
+
         loadInvertedIndex(inputDirectory);
         loadFilesIds(inputDirectory);
         loadFilesLines(inputDirectory);
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();  //in millis
+        System.out.printf("[Load Index with %d keys] Total execution time: %.3f secs.\n", index.size(), timeElapsed/1000.0);
     }
 
     public void loadInvertedIndex(String inputDirectory) {
