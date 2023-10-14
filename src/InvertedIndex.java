@@ -1,7 +1,6 @@
 import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
-import java.io.*;
 import java.text.Normalizer;
 import java.time.Duration;
 import java.time.Instant;
@@ -25,7 +24,7 @@ public class InvertedIndex {
     private final String INDEX_FILE_PREFIX = "IndexFile";
     private final String FILES_IDS_NAME = "FilesIds";
     private final String FILE_LINES_NAME = "FilesLinesContent";
-    private final int QUERY_WORDS_PER_THREAD = 2;
+    private final int MAX_QUERY_WORDS_PER_THREAD = 1;
 
     // Variables de clase:
     private String inputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
@@ -276,6 +275,8 @@ public class InvertedIndex {
     //  3. Agrupa palabras segun su localizacion en una hash de coincidencias.
     //  4. Recorremos la tabla de coincidencia y mostramos las coincidencias en función del porcentaje de matching.
     public void query(String queryString) {
+        Instant start = Instant.now();
+
         Map<Location, Integer> queryMatchings = new TreeMap<Location, Integer>();
 
         System.out.println ("Searching for query: "+queryString);
@@ -289,21 +290,40 @@ public class InvertedIndex {
         String[] words = filter_line.split("\\W+");
         final int querySize = words.length;
 
-        // Creamos los hilos
-        ArrayList<ProcessQueryWord> tasks = new ArrayList<ProcessQueryWord>();
-        ArrayList<Thread> threads = new ArrayList<Thread>();
+        for(String word: words)
+        {
+            if (word == null)
+                continue;
+            word = word.toLowerCase();
+            // Procesar las distintas localizaciones de esta palabra
+            if (resultsMap.get(word)==null)
+                continue;
 
-        int numberOfThreads = querySize / QUERY_WORDS_PER_THREAD;
-        int offset = querySize % QUERY_WORDS_PER_THREAD;
-        if (numberOfThreads == 0){
-            numberOfThreads = 1;
-            offset--;
+            for(Location loc: resultsMap.get(word))
+            {
+                // Si no existe esta localización en la tabla de coincidencias, entonces la añadimos con valor inicial a 1.
+                Integer value = queryMatchings.putIfAbsent(loc, 1);
+                if (value != null) {
+                    // Si existe, incrementamos el número de coincidencias para esta localización.
+                    queryMatchings.put(loc, value+1);
+                }
+            }
         }
 
+        // Creamos los hilos
+        /*ArrayList<ProcessQueryWord> tasks = new ArrayList<ProcessQueryWord>();
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+        System.out.println("Modul: " + querySize % MAX_QUERY_WORDS_PER_THREAD);
+        int numberOfThreads = querySize / MAX_QUERY_WORDS_PER_THREAD;
+        if (querySize % MAX_QUERY_WORDS_PER_THREAD > 0)
+            numberOfThreads += 1;
+        int offset = querySize % numberOfThreads;
+
+        System.out.println("Words: " + querySize);
         System.out.println("Number of threads: " + numberOfThreads);
 
         for (int i = 0; i < numberOfThreads; i++) {
-            int numberOfWords = Math.min(querySize, QUERY_WORDS_PER_THREAD);
+            int numberOfWords = querySize / numberOfThreads;
 
             if (offset > 0) {
                 numberOfWords++;
@@ -328,7 +348,7 @@ public class InvertedIndex {
             }
         }
 
-        queryMatchings = combineProcessedQuerys(tasks);
+        queryMatchings = combineProcessedQuerys(tasks);*/
 
         boolean coincidenceFound = false;
         // Recorremos la tabla de coincidencia y mostramos las líneas en donde aparezca más de un % de las palabras de la query.
@@ -349,5 +369,9 @@ public class InvertedIndex {
         // Mostramos un mensaje si no se ha encontrado ninguna coincidencia
         if (!coincidenceFound)
             System.out.printf(ANSI_RED+"No Matching found.\n"+ANSI_RESET);
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();  //in millis
+        System.out.printf("[Query end] Total execution time: %.3f secs.\n", timeElapsed/1000.0);
     }
 }
