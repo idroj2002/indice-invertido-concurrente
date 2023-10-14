@@ -11,16 +11,15 @@ public class SaveIndex implements Runnable {
     final int MAX_FILES = 200;   // Número máximo de ficheros para salvar el índice invertido.
     final int MIN_FILES = 2;     // Número mínimo de ficheros para salvar el índice invertido.
     final int KEYS_BY_FILE = 1000;
-    final String INDEX_FILE_PREFIX = "IndexFile";
 
     // Variables
     private final Map<String, HashSet<Location>> index;
-    private final String indexDirPath;
+    private final String path;
     private final List<Thread> threadList = new ArrayList<>();
 
-    public SaveIndex(Map<String, HashSet<Location>> index, String indexDirPath) {
+    public SaveIndex(Map<String, HashSet<Location>> index, String path) {
         this.index = index;
-        this.indexDirPath = indexDirPath;
+        this.path = path;
     }
 
     @Override
@@ -43,7 +42,7 @@ public class SaveIndex implements Runnable {
         for (int f = 1; f <= numberOfFiles; f++)
         {
             try {
-                File KeyFile = new File(indexDirPath +"/"+ INDEX_FILE_PREFIX + String.format("%03d", f));
+                File KeyFile = new File(path + String.format("%03d", f));
                 FileWriter fw = new FileWriter(KeyFile);
                 BufferedWriter bw = new BufferedWriter(fw);
                 // Calculamos el número de claves a guardar en este fichero.
@@ -59,7 +58,7 @@ public class SaveIndex implements Runnable {
                 Thread saveIndexFileThread = Thread.startVirtualThread(saveIndexFile);
                 threadList.add(saveIndexFileThread);
             } catch (IOException e) {
-                System.err.println("Error creating Index file " + indexDirPath + INDEX_FILE_PREFIX + String.format("%03d", f));
+                System.err.println("Error creating Index file " + path + String.format("%03d", f));
                 e.printStackTrace();
                 System.exit(-1);
             }

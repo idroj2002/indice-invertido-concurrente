@@ -6,20 +6,19 @@ import java.util.Map;
 import java.util.Set;
 
 public class SaveFilesLines implements Runnable {
-    final String FILE_LINES_NAME = "FilesLinesContent";
     private final Map<Location, String> indexFilesLines;
-    private final String indexDirPath;
+    private final String path;
 
 
-    public SaveFilesLines(Map<Location, String> indexFilesLines, String indexDirPath) {
+    public SaveFilesLines(Map<Location, String> indexFilesLines, String path) {
         this.indexFilesLines = indexFilesLines;
-        this.indexDirPath = indexDirPath;
+        this.path = path;
     }
 
     @Override
     public void run() {
         try {
-            File KeyFile = new File(indexDirPath + "/" + FILE_LINES_NAME);
+            File KeyFile = new File(path);
             FileWriter fw = new FileWriter(KeyFile);
             BufferedWriter bw = new BufferedWriter(fw);
             Set<Map.Entry<Location, String>> keySet = indexFilesLines.entrySet();
@@ -29,7 +28,7 @@ public class SaveFilesLines implements Runnable {
             }
             bw.close(); // Cerramos el fichero.
         } catch (IOException e) {
-            System.err.println("Error creating FilesLines contents file: " + indexDirPath + FILE_LINES_NAME + "\n");
+            System.err.println("Error creating FilesLines contents file: " + path + "\n");
             e.printStackTrace();
             System.exit(-1);
         }

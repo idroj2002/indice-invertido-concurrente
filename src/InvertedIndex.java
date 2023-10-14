@@ -128,13 +128,13 @@ public class InvertedIndex {
 
         try {
             resetDirectory(indexDirPath);
-            Runnable saveIndex = new SaveIndex(index, indexDirPath);
+            Runnable saveIndex = new SaveIndex(index, indexDirPath + "/" + INDEX_FILE_PREFIX);
             Thread saveIndexThread = Thread.startVirtualThread(saveIndex);
 
-            Runnable saveFilesIds = new SaveFilesIds(files, indexDirPath);
+            Runnable saveFilesIds = new SaveFilesIds(files, indexDirPath + "/" + FILES_IDS_NAME);
             Thread saveFilesIdsThread = Thread.startVirtualThread(saveFilesIds);
 
-            Runnable saveFilesLines = new SaveFilesLines(indexFilesLines, indexDirPath);
+            Runnable saveFilesLines = new SaveFilesLines(indexFilesLines, indexDirPath + "/" + FILE_LINES_NAME);
             Thread saveFilesLinesThread = Thread.startVirtualThread(saveFilesLines);
 
             saveIndexThread.join();
