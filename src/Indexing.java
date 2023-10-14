@@ -1,5 +1,9 @@
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Indexing {
     // Número de hilos
@@ -28,6 +32,20 @@ public class Indexing {
 
         invertedIndex.buildIndex();
         invertedIndex.saveInvertedIndex();
+
+        Map<String, HashSet<Location>> old_index = invertedIndex.getIndex();
+        Map<Location, String> old_indexFilesLines = invertedIndex.getIndexFilesLines();
+        Map<Integer, String> old_files = invertedIndex.getFiles();
+        invertedIndex.loadIndex();
+
+        // Comprobar que el Indice Invertido cargado sea igual al salvado.
+        try {
+            assertEquals(old_index, invertedIndex.getIndex());
+            assertEquals(old_indexFilesLines, invertedIndex.getIndexFilesLines());
+            assertEquals(old_files, invertedIndex.getFiles());
+        }catch (AssertionError e){
+            System.out.println(invertedIndex.ANSI_RED+ e.getMessage() + " "+ invertedIndex.ANSI_RESET);
+        }
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();  //in millis

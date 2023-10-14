@@ -14,10 +14,10 @@ import static java.lang.System.exit;
 public class InvertedIndex {
 
     // Constantes:
-    private final String ANSI_RED = "\u001B[31m";
+    public final String ANSI_RESET = "\u001B[0m";
+    public final String ANSI_RED = "\u001B[31m";
     private final String ANSI_GREEN = "\u001B[32m";
     private final String ANSI_GREEN_YELLOW_UNDER = "\u001B[32;40;4m";
-    private final String ANSI_RESET = "\u001B[0m";
     private final float MATCHING_PERCENTAGE = 0.8f;
     private final float NEARLY_MATCHING_PERCENTAGE = 0.6f;
     private final String EXTENSION = "txt"; // Extensión de los ficheros a procesar
@@ -71,9 +71,15 @@ public class InvertedIndex {
         return filesList.poll();
     }
 
-    private String getIndexFilesLine(Location loc){
+    public String getIndexFilesLine(Location loc){
         return(indexFilesLines.get(loc));
     }
+
+    public Map<Location, String> getIndexFilesLines() { return indexFilesLines; }
+
+    public Map<String, HashSet<Location>> getIndex() { return index; }
+
+    public Map<Integer, String> getFiles() { return files; }
 
     public void buildIndex() {
         Instant start = Instant.now();
@@ -164,6 +170,8 @@ public class InvertedIndex {
         }
     }
 
+    public void loadIndex() { loadIndex(indexDirPath); }
+
     public void loadIndex(String inputDirectory) {
         Instant start = Instant.now();
 
@@ -178,7 +186,6 @@ public class InvertedIndex {
 
     public void loadInvertedIndex(String inputDirectory) {
         File folder = new File(inputDirectory);
-        System.out.println("Dir: " + folder.getAbsolutePath());
         File[] listOfFiles = folder.listFiles((d, name) -> name.startsWith(INDEX_FILE_PREFIX));
 
         // Control de errores
