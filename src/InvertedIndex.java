@@ -24,15 +24,12 @@ public class InvertedIndex {
     private final String INDEX_FILE_PREFIX = "IndexFile";
     private final String FILES_IDS_NAME = "FilesIds";
     private final String FILE_LINES_NAME = "FilesLinesContent";
-    private final int MAX_QUERY_WORDS_PER_THREAD = 1;
 
     // Variables de clase:
     private String inputDirPath; // Contiene la ruta del directorio que contiene los ficheros a Indexar.
     private String indexDirPath; // Contiene la ruta del directorio que contiene el índice invertido.
-    private ArrayList<Thread> threads;
     private Map<Integer,String> files = new HashMap<Integer,String>();
-    private ArrayList<ProcessFiles> runnables;
-    private ConcurrentLinkedDeque<File> filesList;
+    private ConcurrentLinkedDeque<File> filesList = new ConcurrentLinkedDeque<File>();
     private Map<String, HashSet<Location>> index = new ConcurrentHashMap<>();
     private Map<Location, String> indexFilesLines = new HashMap<>();
     private Thread createVirtualThreads;
@@ -42,26 +39,17 @@ public class InvertedIndex {
 
     // Constructores
     public InvertedIndex() {
-        initCollections();
+
     }
 
     public InvertedIndex(String InputPath) {
         this.inputDirPath = InputPath;
         this.indexDirPath = DEFAULT_INDEX_DIR;
-        initCollections();
     }
 
     public InvertedIndex(String inputDir, String indexDir) {
         this.inputDirPath = inputDir;
         this.indexDirPath = indexDir;
-        initCollections();
-    }
-
-    private void initCollections() {
-        runnables = new ArrayList<ProcessFiles>();
-        threads = new ArrayList<Thread>();
-        files = new HashMap<>();
-        filesList = new ConcurrentLinkedDeque<File>();
     }
 
     // Getters y Setters
