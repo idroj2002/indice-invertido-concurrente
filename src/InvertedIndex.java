@@ -94,12 +94,12 @@ public class InvertedIndex {
             System.err.println("Join Exception: " + e.getMessage());
         }
         index = createVirtualThreadsRunnable.getIndex();
-        if (Indexing.DEBUG) System.out.println(index);
+        //if (Indexing.DEBUG) System.out.println("Index: " + index);
         indexFilesLines = createVirtualThreadsRunnable.getIndexFilesLines();
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();  //in millis
-        System.out.printf("[Build Index with %d files] Total execution time: %.3f secs.\n", filesList.size(), timeElapsed/1000.0);
+        System.out.printf("[Build Index with %d files] Total execution time: %.3f secs.\n", fileNumber - 1, timeElapsed/1000.0);
     }
 
     // Procesamiento recursivo del directorio para buscar los ficheros de texto, almacenandolo en la lista fileList
@@ -121,7 +121,7 @@ public class InvertedIndex {
             }
         }
         else
-            System.err.printf("Directorio %s no existe.\n",file.getAbsolutePath());
+            System.err.printf("Directory does not exist: %s.\n",file.getAbsolutePath());
     }
 
     private boolean checkFile(String name) {
@@ -130,7 +130,6 @@ public class InvertedIndex {
 
     public void saveInvertedIndex() {
         Instant start = Instant.now();
-
         try {
             resetDirectory(indexDirPath);
             Runnable saveIndex = new SaveIndex(index, indexDirPath + "/" + INDEX_FILE_PREFIX);
@@ -155,17 +154,19 @@ public class InvertedIndex {
         }
     }
 
-    public void resetDirectory(String directory) throws RuntimeException {
-        File path = new File(directory);
-        if (!path.exists())
-            if (!path.mkdir()) throw new RuntimeException("Error creando el directorio " + directory);
-        else if (path.isDirectory()) {
+    public void resetDirectory(String path) throws RuntimeException {
+        File directory = new File(path);
+        if (!directory.exists()) {
+            if (!directory.mkdir()) throw new RuntimeException("Error creating the directory: " + directory.getAbsolutePath());
+        } else if (directory.isDirectory()) {
             try {
-                FileUtils.cleanDirectory(path);
+                FileUtils.cleanDirectory(directory);
             } catch (IOException e) {
-                System.err.printf("Error borrando contenido directorio indice %s.\n",path.getAbsolutePath());
+                System.err.printf("Error erasing content of index directory: %s.\n",directory.getAbsolutePath());
                 e.printStackTrace();
             }
+        } else {
+            if (Indexing.DEBUG) System.out.println("Index path not a directory: " + directory.getAbsolutePath());
         }
     }
 

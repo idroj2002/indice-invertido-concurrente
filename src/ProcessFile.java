@@ -1,16 +1,13 @@
 import java.io.*;
 import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ProcessFile implements Runnable {
 
     private final File file;
     private final int fileId;
     private final Map<String, HashSet<Location>> index = new TreeMap<String, HashSet <Location>>();
-    private final Map<Location, String> indexFilesLines = new HashMap<>();
+    private final Map<Location, String> indexFileLines = new LinkedHashMap<>();
 
     public ProcessFile(File f, int id) {
         this.file = f;
@@ -21,8 +18,8 @@ public class ProcessFile implements Runnable {
         return index;
     }
 
-    public Map<Location, String> getIndexFilesLines() {
-        return indexFilesLines;
+    public Map<Location, String> getIndexFileLines() {
+        return indexFileLines;
     }
 
     @Override
@@ -34,36 +31,28 @@ public class ProcessFile implements Runnable {
         {
             String line;
             int lineNumber = 0;  // inicializa contador de líneas a 0.
-            while( (line = br.readLine()) != null)   // Leemos siguiente línea de texto del fichero.
-            {
+            while( (line = br.readLine()) != null) {   // Leemos siguiente línea de texto del fichero.
                 lineNumber++;
-                //TotalLines++;
-                if (Indexing.DEBUG) System.out.printf("Procesando linea %d fichero %d: ", lineNumber, fileId);
                 Location newLocation = new Location(fileId, lineNumber);
-                indexFilesLines.put(newLocation, line);
+                indexFileLines.put(newLocation, line);
                 // Eliminamos carácteres especiales de la línea del fichero.
                 line = Normalizer.normalize(line, Normalizer.Form.NFD);
                 line = line.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
                 String filter_line = line.replaceAll("[^a-zA-Z0-9áÁéÉíÍóÓúÚäÄëËïÏöÖüÜñÑ ]","");
+                //if (Indexing.DEBUG) System.out.printf("Procesando linea %d fichero %d: %s\n", lineNumber, fileId, filter_line);
                 // Dividimos la línea en palabras.
                 String[] words = filter_line.split("\\W+");
-                //String[] words = line.split("(?U)\\p{Space}+");
                 // Procesar cada palabra
                 for(String word: words)
                 {
-                    if (Indexing.DEBUG) System.out.printf("%s ",word);
                     word = word.toLowerCase();
-                    // Obtener entrada correspondiente en el Indice Invertido
-                    HashSet<Location> locations = index.computeIfAbsent(word, k -> new HashSet<Location>());
                     // Si no existe esa palabra en el indice invertido, creamos una lista vacía de Localizaciones y la añadimos al Indice
-                    //TotalWords++;
+                    HashSet<Location> locations = index.computeIfAbsent(word, k -> new HashSet<Location>());
                     // Añadimos nueva localización en la lista de localizaciomes asocidada con ella.
-                    //int oldLocSize = locations.size();
                     locations.add(newLocation);
-                    //if (locations.size()>oldLocSize) TotalLocations++;
                 }
-                if (Indexing.DEBUG) System.out.println();
             }
+            //if (Indexing.DEBUG) System.out.println("File lines of " + file.getName() + ": " + indexFileLines + "\n");
         } catch (FileNotFoundException e) {
             System.err.printf("Fichero %s no encontrado.\n",file.getAbsolutePath());
             e.printStackTrace();

@@ -7,7 +7,7 @@ public class ProcessFiles implements Runnable {
     private final ArrayList<Thread> threads;
     private final ArrayList<ProcessFile> runnables;
     private final Map<String, HashSet<Location>> index = new TreeMap<>();
-    private final Map<Location, String> indexFilesLines = new HashMap<>();
+    private final Map<Location, String> indexFilesLines = new LinkedHashMap<>();
     private boolean existMoreFiles = true;
     private int id;
 
@@ -62,8 +62,11 @@ public class ProcessFiles implements Runnable {
                 index
                         .computeIfAbsent(entry.getKey(), k -> new HashSet<>())
                         .addAll(entry.getValue());
-            for (Map.Entry<Location, String> entry : processFile.getIndexFilesLines().entrySet())
+            for (Map.Entry<Location, String> entry : processFile.getIndexFileLines().entrySet()) {
                 indexFilesLines.computeIfAbsent(entry.getKey(), k -> entry.getValue());
+            }
+
         }
+        //if (Indexing.DEBUG) System.out.println("File lines of all files: " + indexFilesLines + "\n");
     }
 }

@@ -30,13 +30,13 @@ public class SaveIndex implements Runnable {
         Set<String> keySet = index.keySet();
         Iterator<String> keyIterator = keySet.iterator();
         remainingKeys =  keySet.size();
-        numberOfFiles = keySet.size() / KEYS_BY_FILE;
+        numberOfFiles = keySet.size() / KEYS_BY_FILE; // 3
         // Calculamos el número de ficheros a crear en función del número de claves que hay en el hash.
         if (numberOfFiles > MAX_FILES)
             numberOfFiles = MAX_FILES;
         if (numberOfFiles < MIN_FILES)
             numberOfFiles = MIN_FILES;
-        remainingFiles = numberOfFiles;
+        remainingFiles = numberOfFiles; // 3
 
         // Bucle para recorrer los ficheros de indice a crear.
         for (int f = 1; f <= numberOfFiles; f++)
@@ -50,9 +50,10 @@ public class SaveIndex implements Runnable {
                 remainingKeys -= keysByFile;
                 remainingFiles--;
 
-                Set<String> subKeySet = new HashSet<>();
+                Set<String> subKeySet = new LinkedHashSet<>();
                 for (long k = 0; k < keysByFile; k++) {
-                    if (keyIterator.hasNext()) subKeySet.add(keyIterator.next());
+                    String key = keyIterator.next();
+                    if (keyIterator.hasNext()) subKeySet.add(key);
                 }
                 Runnable saveIndexFile = new SaveIndexFile(index, subKeySet, bw);
                 Thread saveIndexFileThread = Thread.startVirtualThread(saveIndexFile);
