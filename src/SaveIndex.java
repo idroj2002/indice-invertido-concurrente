@@ -52,8 +52,7 @@ public class SaveIndex implements Runnable {
 
                 Set<String> subKeySet = new LinkedHashSet<>();
                 for (long k = 0; k < keysByFile; k++) {
-                    String key = keyIterator.next();
-                    if (keyIterator.hasNext()) subKeySet.add(key);
+                    if (keyIterator.hasNext()) subKeySet.add(keyIterator.next());
                 }
                 Runnable saveIndexFile = new SaveIndexFile(index, subKeySet, bw);
                 Thread saveIndexFileThread = Thread.startVirtualThread(saveIndexFile);
