@@ -6,15 +6,12 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Indexing {
-    // Número de hilos
-    private static int N;
-
     // Path al directorio de entrada que contiene los ficheros que se van a procesar.
     private static String path;
 
     // Extensión de los ficheros a procesar
     private static String extension;
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     public static void main(String[] args) {
         InvertedIndex invertedIndex;
