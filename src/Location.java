@@ -1,5 +1,12 @@
+/* ---------------------------------------------------------------
+Práctica 1.
+Código fuente: Location.java
+Grau Informàtica i ADE
+Arenas Romero, Jordi. NIF: 39394122K
+Barón Pascual, Sergi. NIF: 48281063S
+--------------------------------------------------------------- */
+
 import java.util.Objects;
-import java.io.Serializable;
 
 
 public class Location implements Comparable<Location>

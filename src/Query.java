@@ -1,5 +1,12 @@
+/* ---------------------------------------------------------------
+Práctica 1.
+Código fuente: Query.java
+Grau Informàtica i ADE
+Arenas Romero, Jordi. NIF: 39394122K
+Barón Pascual, Sergi. NIF: 48281063S
+--------------------------------------------------------------- */
+
 import static java.lang.System.exit;
-import static java.lang.System.in;
 
 public class Query {
     public static void main(String[] args) {

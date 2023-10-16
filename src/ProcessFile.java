@@ -1,3 +1,11 @@
+/* ---------------------------------------------------------------
+Práctica 1.
+Código fuente: ProcessFile.java
+Grau Informàtica i ADE
+Arenas Romero, Jordi. NIF: 39394122K
+Barón Pascual, Sergi. NIF: 48281063S
+--------------------------------------------------------------- */
+
 import java.io.*;
 import java.text.Normalizer;
 import java.util.*;

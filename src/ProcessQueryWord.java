@@ -1,3 +1,11 @@
+/* ---------------------------------------------------------------
+Práctica 1.
+Código fuente: ProcessQueryWord.java
+Grau Informàtica i ADE
+Arenas Romero, Jordi. NIF: 39394122K
+Barón Pascual, Sergi. NIF: 48281063S
+--------------------------------------------------------------- */
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;

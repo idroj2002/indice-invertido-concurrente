@@ -1,3 +1,11 @@
+/* ---------------------------------------------------------------
+Práctica 1.
+Código fuente: Indexing.java
+Grau Informàtica i ADE
+Arenas Romero, Jordi. NIF: 39394122K
+Barón Pascual, Sergi. NIF: 48281063S
+--------------------------------------------------------------- */
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;

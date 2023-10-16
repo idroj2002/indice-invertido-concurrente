@@ -1,3 +1,11 @@
+/* ---------------------------------------------------------------
+Práctica 1.
+Código fuente: InvertedIndex.java
+Grau Informàtica i ADE
+Arenas Romero, Jordi. NIF: 39394122K
+Barón Pascual, Sergi. NIF: 48281063S
+--------------------------------------------------------------- */
+
 import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
