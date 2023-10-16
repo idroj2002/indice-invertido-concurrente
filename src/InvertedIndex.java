@@ -299,7 +299,7 @@ public class InvertedIndex {
             }
         }
 
-        // Creamos los hilos
+        // Versión concurrente (menos óptima)
         /*ArrayList<ProcessQueryWord> tasks = new ArrayList<ProcessQueryWord>();
         ArrayList<Thread> threads = new ArrayList<Thread>();
         System.out.println("Modul: " + querySize % MAX_QUERY_WORDS_PER_THREAD);
