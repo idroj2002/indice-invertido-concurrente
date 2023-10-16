@@ -39,7 +39,6 @@ public class ProcessFile implements Runnable {
                 line = Normalizer.normalize(line, Normalizer.Form.NFD);
                 line = line.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
                 String filter_line = line.replaceAll("[^a-zA-Z0-9áÁéÉíÍóÓúÚäÄëËïÏöÖüÜñÑ ]","");
-                //if (Indexing.DEBUG) System.out.printf("Procesando linea %d fichero %d: %s\n", lineNumber, fileId, filter_line);
                 // Dividimos la línea en palabras.
                 String[] words = filter_line.split("\\W+");
                 // Procesar cada palabra
@@ -52,7 +51,7 @@ public class ProcessFile implements Runnable {
                     locations.add(newLocation);
                 }
             }
-            //if (Indexing.DEBUG) System.out.println("File lines of " + file.getName() + ": " + indexFileLines + "\n");
+            if (Indexing.DEBUG) System.out.println("File lines of " + file.getName() + ": " + indexFileLines + "\n");
         } catch (FileNotFoundException e) {
             System.err.printf("Fichero %s no encontrado.\n",file.getAbsolutePath());
             e.printStackTrace();

@@ -281,6 +281,7 @@ public class InvertedIndex {
 
         for(String word: words)
         {
+            if (Indexing.DEBUG) System.out.println("Processing word '" + word + "'");
             if (word == null)
                 continue;
             word = word.toLowerCase();
